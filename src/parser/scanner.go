@@ -1,4 +1,4 @@
-package wapiq
+package parser
 
 import (
 	"bufio"
@@ -27,6 +27,27 @@ func (s *Scanner) unread() {
 	_ = s.r.UnreadRune()
 }
 
+func (s *Scanner) scanComment() (t Token, l string) {
+	var b bytes.Buffer
+	b.WriteRune(s.read())
+	s.unread()
+
+	if r := s.read(); r != '#' {
+		s.unread()
+		return T_COMMENT, b.String()
+	}
+
+	for {
+		if r := s.read(); r == eof || r == '\n' {
+			break
+		} else {
+			b.WriteRune(r)
+		}
+	}
+
+	return T_COMMENT, b.String()
+}
+
 func (s *Scanner) scanWS() (t Token, l string) {
 	var b bytes.Buffer
 	b.WriteRune(s.read())
@@ -42,7 +63,7 @@ func (s *Scanner) scanWS() (t Token, l string) {
 		}
 	}
 
-	return WS, b.String()
+	return T_WS, b.String()
 }
 
 func (s *Scanner) scanIdent() (t Token, l string) {
@@ -52,11 +73,11 @@ func (s *Scanner) scanIdent() (t Token, l string) {
 	for {
 		if r := s.read(); r == eof {
 			break
-		} else if !isLetter(r) && !isNum(r) && !isSym(r) {
+		} else if !isAlpha(r) && !isNum(r) && !isSym(r) {
 			s.unread()
 			break
 		} else {
-			_, _ := b.WriteRune(r)
+			b.WriteRune(r)
 		}
 	}
 
@@ -64,22 +85,21 @@ func (s *Scanner) scanIdent() (t Token, l string) {
 	bs := b.String()
 	switch strings.ToUpper(bs) {
 	case "API":
-		return API, bs
+		return T_API, bs
 	case "GET":
-		return GET, bs
+		return T_GET, bs
 	case "POST":
-		return POST, bs
+		return T_POST, bs
 	case "MAP":
-		return MAP, bs
+		return T_MAP, bs
 	case "QUERY":
-		return QUERY, bs
+		return T_QUERY, bs
 	case "FOR":
-		return FOR, bs
+		return T_FOR, bs
 	case "WHERE":
-		return WHERE, bs
+		return T_WHERE, bs
 	}
-
-	return IDENT, bs
+	return T_IDENT, bs
 }
 
 func (s *Scanner) Scan() (t Token, l string) {
@@ -87,6 +107,9 @@ func (s *Scanner) Scan() (t Token, l string) {
 	if isWS(r) {
 		s.unread()
 		return s.scanWS()
+	} else if r == '#' {
+		s.unread()
+		return s.scanComment()
 	} else if isAlpha(r) || isNum(r) {
 		s.unread()
 		return s.scanIdent()
@@ -94,22 +117,22 @@ func (s *Scanner) Scan() (t Token, l string) {
 
 	switch r {
 	case eof:
-		return EOF, ""
+		return T_EOF, ""
 	case '"':
-		return QUOTE_NAME, string(r)
+		return T_QUOTE_NAME, string(r)
 	case '`':
-		return QUOTE_VALUE, string(r)
+		return T_QUOTE_VALUE, string(r)
 	case '{':
-		return OBJECT_OPEN, string(r)
+		return T_OBJECT_OPEN, string(r)
 	case '}':
-		return OBJECT_CLOSE, string(r)
+		return T_OBJECT_CLOSE, string(r)
 	case '[':
-		return ARRAY_OPEN, string(r)
+		return T_ARRAY_OPEN, string(r)
 	case ']':
-		return ARRAY_CLOSE, string(r)
+		return T_ARRAY_CLOSE, string(r)
 	case ';':
-		return DONE, string(r)
+		return T_DONE, string(r)
 	default:
-		return ILLEGAL, string(r)
+		return T_ILLEGAL, string(r)
 	}
 }

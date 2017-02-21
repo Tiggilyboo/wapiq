@@ -1,0 +1,32 @@
+# Create new google places API
+"GooglePlaces" API {
+  path `https://maps.googleapis.com/maps/api/place/`
+  args {
+    "key" `YOUR_API_KEY`
+  }
+};
+
+# Create a new GET http request
+"search" GET {
+  path `nearbysearch/json`
+  type `json`
+  head []
+  query [
+    `location`
+    `radius`
+    `types`
+    `name`
+  ]
+  body []
+};
+
+# Create a new MAP between Place and our search request
+"Place" MAP {
+  "search" {
+    "id"        `results.place_id`
+    "name"      `results.name`
+    "types"     `results.types`
+    "location"  `results.geometry.location`
+    "address"   `results.vicinity`
+  }
+};

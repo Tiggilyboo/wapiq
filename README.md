@@ -83,20 +83,22 @@ type Place struct {
 ### Ok, so how do I request data now?
 
 ```wapiq
-search FOR Place WHERE
+QUERY search FOR Place WHERE
   name `cruise`
   location `-33.8670,151.1957`
   radius `500`
   types `food`
+  ;
 ```
 
 So if you've ever used a query language, its very similar, as expected, this query will return a `[]Place` with the following criteria from the default mapping supplied.
 
 In general, queries take the form
 ```
--ACTION- FOR -MAPPING- WHERE
+-ACTION- FOR -MAPPING- [WHERE
   -ARG- `-VALUE-`
   ...
+  ];
 ```
 
 More to come...
