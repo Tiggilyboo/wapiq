@@ -99,8 +99,6 @@ func (s *Scanner) scanIdent() (t Token, l string) {
 		return T_POST, bs
 	case "MAP":
 		return T_MAP, bs
-	case "/":
-		return T_QUERY, bs
 	case "FOR":
 		return T_FOR, bs
 	case "WHERE":
@@ -175,6 +173,8 @@ func (s *Scanner) Scan() (t Token, l string) {
 	switch r {
 	case eof:
 		return T_EOF, ""
+	case '/':
+		return T_QUERY, string(r)
 	case '"':
 		return T_QUOTE_NAME, string(r)
 	case '`':

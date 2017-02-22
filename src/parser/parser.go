@@ -26,9 +26,6 @@ func (p *Parser) scan() (t Token, l string) {
 
 	t, l = p.s.Scan()
 	p.b.t, p.b.l = t, l
-
-	fmt.Printf("parser.scan: %s\n", l)
-
 	return
 }
 
@@ -112,11 +109,7 @@ func (p *Parser) parseObjectBody() ([]Action, error) {
 		t, l = p.scanIgnoreWS()
 		if t == T_OBJECT_CLOSE {
 			break
-		}
-		p.unscan()
-
-		t, l = p.scanIgnoreWS()
-		if t != T_IDENT_NAME {
+		} else if t != T_IDENT_NAME {
 			return nil, fmt.Errorf("Found %q, expected name identifier in object.")
 		}
 		n := l
@@ -167,7 +160,9 @@ func (p *Parser) parseObject(quote Token) (*Action, error) {
 func (p *Parser) Parse() ([]Action, error) {
 	var err error
 	var pa *Action
+	maps := map[string]Action{}
 	a := []Action{}
+
 loop:
 	for {
 		t, l := p.scanIgnoreWS()
@@ -175,13 +170,22 @@ loop:
 		case T_COMMENT:
 			break
 		case T_DONE:
+			if err == nil && pa != nil {
+				if pa.Token == T_GET || pa.Token == T_POST {
+					maps[pa.Identifier] = *pa
+				}
+				a = append(a, *pa)
+			}
+			if err != nil {
+				break loop
+			}
 			break
 		case T_QUERY:
 			p.unscan()
 			pa, err = p.parseQuery()
 		case T_IDENT_NAME, T_IDENT_VALUE:
 			p.unscan()
-			pa, err = p.parseAction()
+			pa, err = p.parseAction(maps)
 		case T_EOF:
 			break loop
 		default:
@@ -190,9 +194,8 @@ loop:
 			}
 			break loop
 		}
-		if err != nil && pa != nil {
-			fmt.Println("Parsed: ", pa)
-			a = append(a, *pa)
+		if err != nil {
+			break loop
 		}
 	}
 	return a, err

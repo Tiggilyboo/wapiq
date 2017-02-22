@@ -36,28 +36,31 @@ func (p *Parser) parseQuery() (*Action, error) {
 	if t != T_WHERE && t != T_DONE {
 		return nil, fmt.Errorf("Found %q, expected WHERE or ;", l)
 	}
-	if t == T_WHERE {
-		for {
-			t, l = p.scanIgnoreWS()
-			if t != T_IDENT {
-				return nil, fmt.Errorf("Found %q, expected WHERE clause identifier.", l)
-			}
-			w := Action{
-				Token:      T_IDENT_WHERE,
-				Identifier: l,
-			}
-			t, l = p.scanIgnoreWS()
-			if t != T_IDENT_VALUE {
-				return nil, fmt.Errorf("Found %q, expected value after '%s' identifier.", l)
-			}
-
-			t, l = p.scanIgnoreWS()
-			if t == T_DONE {
-				break
-			}
-
-			a.Actions = append(a.Actions, w)
+	if t != T_WHERE {
+		return a, nil
+	}
+	for {
+		t, l = p.scanIgnoreWS()
+		if t == T_DONE {
+			break
 		}
+		p.unscan()
+
+		t, l = p.scanIgnoreWS()
+		if t != T_IDENT {
+			return nil, fmt.Errorf("Found %q, expected WHERE clause identifier.", l)
+		}
+		w := Action{
+			Token:      T_IDENT_WHERE,
+			Identifier: l,
+		}
+
+		t, l = p.scanIgnoreWS()
+		if t != T_IDENT_VALUE {
+			return nil, fmt.Errorf("Found %q, expected value after '%s' identifier.", l)
+		}
+
+		a.Actions = append(a.Actions, w)
 	}
 
 	return a, nil
