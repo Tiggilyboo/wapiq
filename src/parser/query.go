@@ -46,7 +46,7 @@ func (p *Parser) parseQuery() (*Action, error) {
 				Token:      T_IDENT_WHERE,
 				Identifier: l,
 			}
-			t, l = p.scanQuoted(T_QUOTE_VALUE)
+			t, l = p.scanIgnoreWS()
 			if t != T_IDENT_VALUE {
 				return nil, fmt.Errorf("Found %q, expected value after '%s' identifier.", l)
 			}

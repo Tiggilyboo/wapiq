@@ -3,7 +3,6 @@ package parser
 import (
 	"fmt"
 	"io"
-	"strings"
 )
 
 type Parser struct {
@@ -45,62 +44,6 @@ func (p *Parser) scanIgnoreWS() (t Token, l string) {
 	return
 }
 
-func (p *Parser) scanActionKeyword() (t Token, l string) {
-	t, l = p.scanIgnoreWS()
-	if t != T_IDENT {
-		p.unscan()
-		return T_IDENT, l
-	}
-
-	switch strings.ToLower(l) {
-	case "path":
-		return T_ACT_PATH, l
-	case "args":
-		return T_ACT_ARGS, l
-	case "type":
-		return T_ACT_TYPE, l
-	case "head":
-		return T_ACT_HEAD, l
-	case "query":
-		return T_ACT_QUERY, l
-	case "body":
-		return T_ACT_BODY, l
-	default:
-		p.unscan()
-		return T_IDENT, l
-	}
-}
-
-func (p *Parser) scanQuoted(quote Token) (t Token, l string) {
-	t, l = p.scanIgnoreWS()
-	if t != quote {
-		return T_ILLEGAL, l
-	}
-
-	t, l = p.scanIgnoreWS()
-	fmt.Println("scanQuoted: ", t, T_IDENT, l)
-	if t != T_IDENT {
-		p.unscan()
-		return T_ILLEGAL, l
-	}
-	r := l
-
-	t, l = p.scanIgnoreWS()
-	if t != quote {
-		p.unscan()
-		return T_ILLEGAL, l
-	}
-
-	switch quote {
-	case T_QUOTE_NAME:
-		return T_IDENT_NAME, r
-	case T_QUOTE_VALUE:
-		return T_IDENT_VALUE, r
-	default:
-		return T_IDENT, r
-	}
-}
-
 func (p *Parser) parseArrayBody() ([]Action, error) {
 	var t Token
 	var l string
@@ -112,17 +55,12 @@ func (p *Parser) parseArrayBody() ([]Action, error) {
 	}
 
 	for {
-		t, _ = p.scanIgnoreWS()
+		t, l = p.scanIgnoreWS()
 		if t == T_ARRAY_CLOSE {
 			break
-		}
-		p.unscan()
-
-		t, l = p.scanQuoted(T_QUOTE_VALUE)
-		if t != T_IDENT_VALUE {
+		} else if t != T_IDENT_VALUE {
 			return a, fmt.Errorf("Found %q, expected array value")
 		}
-
 		a = append(a, Action{
 			Token: t,
 			Value: l,
@@ -137,7 +75,7 @@ func (p *Parser) parseArray(quote Token) (*Action, error) {
 	var l string
 
 	if quote == T_QUOTE_NAME {
-		t, l = p.scanQuoted(quote)
+		t, l = p.scanIgnoreWS()
 		if quote == T_QUOTE_NAME && t != T_IDENT_NAME {
 			return nil, fmt.Errorf("Found %q, expected quoted name array identifier")
 		}
@@ -177,13 +115,13 @@ func (p *Parser) parseObjectBody() ([]Action, error) {
 		}
 		p.unscan()
 
-		t, l = p.scanQuoted(T_QUOTE_NAME)
+		t, l = p.scanIgnoreWS()
 		if t != T_IDENT_NAME {
 			return nil, fmt.Errorf("Found %q, expected name identifier in object.")
 		}
 		n := l
 
-		t, l = p.scanQuoted(T_QUOTE_VALUE)
+		t, l = p.scanIgnoreWS()
 		if t != T_IDENT_VALUE {
 			return nil, fmt.Errorf("Found %q, expected value identifier after name in object.")
 		}
@@ -203,7 +141,7 @@ func (p *Parser) parseObject(quote Token) (*Action, error) {
 	var l string
 
 	if quote == T_QUOTE_NAME {
-		t, l = p.scanQuoted(quote)
+		t, l = p.scanIgnoreWS()
 		if quote == T_QUOTE_NAME && t != T_IDENT_NAME {
 			return nil, fmt.Errorf("Found %q, expected quoted object name identifier")
 		}
@@ -226,20 +164,36 @@ func (p *Parser) parseObject(quote Token) (*Action, error) {
 	return a, nil
 }
 
-func (p *Parser) Parse() (*Action, error) {
-	t, l := p.scanIgnoreWS()
-	switch t {
-	case T_DONE:
-		return p.Parse()
-	case T_QUERY:
-		p.unscan()
-		return p.parseQuery()
-	case T_QUOTE_NAME:
-		p.unscan()
-		return p.parseAction()
-	case T_EOF:
-		return nil, nil
-	default:
-		return nil, fmt.Errorf("Found %q, expected QUERY or quoted identifier.", l)
+func (p *Parser) Parse() ([]Action, error) {
+	var err error
+	var pa *Action
+	a := []Action{}
+loop:
+	for {
+		t, l := p.scanIgnoreWS()
+		switch t {
+		case T_COMMENT:
+			break
+		case T_DONE:
+			break
+		case T_QUERY:
+			p.unscan()
+			pa, err = p.parseQuery()
+		case T_IDENT_NAME, T_IDENT_VALUE:
+			p.unscan()
+			pa, err = p.parseAction()
+		case T_EOF:
+			break loop
+		default:
+			if err == nil {
+				err = fmt.Errorf("Found %q, expected QUERY or quoted identifier.", l)
+			}
+			break loop
+		}
+		if err != nil && pa != nil {
+			fmt.Println("Parsed: ", pa)
+			a = append(a, *pa)
+		}
 	}
+	return a, err
 }

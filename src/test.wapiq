@@ -30,3 +30,11 @@
     "address"   `results.vicinity`
   }
 };
+
+# Query GooglePlaces using search map into Place, where clause parameters
+/search FOR Place WHERE
+  name `cruise`
+  location `-33.8670,151.1957`
+  radius `500`
+  types `food`
+;

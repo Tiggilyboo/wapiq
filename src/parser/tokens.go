@@ -72,7 +72,7 @@ func isNum(r rune) bool {
 }
 
 func isSym(r rune) bool {
-	return strings.ContainsRune("~!@#$%^&*()-_=+{}[];:'\",.<>/?\\|", r)
+	return strings.ContainsRune("~!@#$%^&*()-_=+{}[];:',.<>/?\\|", r)
 }
 
 const eof rune = rune(0)
