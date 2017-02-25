@@ -189,7 +189,7 @@ loop:
 			}
 		case T_QUERY:
 			p.unscan()
-			pa, err = p.parseQuery(maps)
+			pa, err = p.parseQuery()
 		case T_IDENT_NAME, T_IDENT_VALUE:
 			p.unscan()
 			pa, err = p.parseAction(maps)

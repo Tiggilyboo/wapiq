@@ -2,7 +2,7 @@ package parser
 
 import "fmt"
 
-func (p *Parser) parseQuery(maps ParseMap) (*Action, error) {
+func (p *Parser) parseQuery() (*Action, error) {
 	var t Token
 	var l string
 	a := &Action{
@@ -18,10 +18,6 @@ func (p *Parser) parseQuery(maps ParseMap) (*Action, error) {
 	t, l = p.scanIgnoreWS()
 	if t != T_IDENT {
 		return nil, fmt.Errorf("Found %q, expected action identifier.", l)
-	}
-	_, e := maps[l]
-	if !e {
-		return nil, fmt.Errorf("Found %q, unrecognised action idenitifier.", l)
 	}
 	a.Identifier = l
 

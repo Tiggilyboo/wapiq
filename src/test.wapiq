@@ -2,7 +2,7 @@
 "GooglePlaces" API {
   path `https://maps.googleapis.com/maps/api/place/`
   args {
-    "key" `YOUR_API_KEY`
+    "key" `AIzaSyCZmDlZXIlhlkDbHzAfffvWGWQa1LliZvE`
   }
 };
 
@@ -12,6 +12,7 @@
   type `json`
   head []
   query [
+    `key`
     `location`
     `radius`
     `types`
@@ -21,7 +22,7 @@
 };
 
 # Create a new MAP between Place and our search request
-"Place" MAP {
+"Place" MAP "GooglePlaces" {
   "search" {
     "id"        `results.place_id`
     "name"      `results.name`
@@ -30,6 +31,9 @@
     "address"   `results.vicinity`
   }
 };
+
+# Create a new MAP between Error and our bad API requests
+
 
 # Query GooglePlaces using search map into Place, where clause parameters
 /search FOR Place WHERE

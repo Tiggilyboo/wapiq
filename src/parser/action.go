@@ -41,7 +41,7 @@ func (p *Parser) parseMap(a Action) ([]Action, error) {
 
 	t, l = p.scanIgnoreWS()
 	if t != T_OBJECT_OPEN {
-		return nil, fmt.Errorf("Found %q, expected { after MAP action identifier.", l)
+		return nil, fmt.Errorf("Found %q, expected { after MAP's API identifier.", l)
 	}
 	p.unscan()
 
@@ -77,10 +77,18 @@ func (p *Parser) parseAction(maps ParseMap) (*Action, error) {
 	}
 	a.Token = cmdToken
 
+	if cmdToken == T_MAP {
+		t, l = p.scanIgnoreWS()
+		if t != T_IDENT_NAME {
+			return nil, fmt.Errorf("Found %q, expected API name after %s command.", l, cmds)
+		}
+		a.Value = l
+	}
 	t, l = p.scanIgnoreWS()
 	if t != T_OBJECT_OPEN {
 		return nil, fmt.Errorf("Found %q, expected { for %s command.", l, cmds)
 	}
+
 	var availActions []Token
 	switch cmdToken {
 	case T_GET, T_POST:

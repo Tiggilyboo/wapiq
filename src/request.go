@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -38,21 +39,50 @@ type Response struct {
 	Response   bytes.Buffer
 }
 
-func (r *Request) URL(a API) (*url.URL, error) {
-	u, err := url.Parse(r.Path)
+func (r *Request) URL(a *API) (*url.URL, error) {
+	u, err := url.Parse(a.Path + r.Path)
 	if err != nil {
 		return nil, err
 	}
 	u.RawQuery = r.Query.Encode()
+	fmt.Println(u.String())
 	return u, nil
 }
 
-func (r *Request) Invoke(a API) (*Response, error) {
+func (r *Request) fillEmptyArgs(a *API) {
+	var vs string
+	var e bool
+	for k, v := range *a.Args {
+		vs = v.(string)
+		_, e = r.Query[k]
+		if e {
+			r.Query.Set(k, vs)
+			continue
+		}
+		_, e = r.Head[k]
+		if e {
+			r.Head.Set(k, vs)
+		}
+		_, e = r.Body[k]
+		if e {
+			r.Body.Set(k, vs)
+		}
+	}
+	for k, v := range r.Query {
+		if len(v) == 0 || v[0] == "" {
+			r.Query.Del(k)
+		}
+	}
+}
+
+func (r *Request) Invoke(a *API) (*Response, error) {
 	var req *http.Request
 	var u *url.URL
 	var body io.Reader
 	var rb bytes.Buffer
 	var err error
+
+	r.fillEmptyArgs(a)
 
 	if len(r.Body) > 0 {
 		body = bytes.NewReader([]byte(r.Body.Encode()))
@@ -70,23 +100,27 @@ func (r *Request) Invoke(a API) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
+	if r.Head != nil {
+		req.Header = r.Head
+	}
 
-	req.Header = r.Head
-	err = req.ParseForm()
+	var resp *http.Response
+	c := http.Client{}
+	resp, err = c.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	defer req.Response.Body.Close()
+	defer resp.Body.Close()
 	rw := bufio.NewWriter(&rb)
-	_, err = io.Copy(rw, req.Response.Body)
+	_, err = io.Copy(rw, resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Response{
-		StatusCode: req.Response.StatusCode,
-		Status:     req.Response.Status,
+		StatusCode: resp.StatusCode,
+		Status:     resp.Status,
 		Response:   rb,
 	}, nil
 }

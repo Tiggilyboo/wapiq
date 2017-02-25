@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -43,15 +44,20 @@ func (*API) Serialize(a *parser.Action) (*API, error) {
 	return &api, nil
 }
 
-func (*Map) Serialize(a *parser.Action) (*Map, error) {
+func (*Map) Serialize(apis map[string]API, a *parser.Action) (*Map, error) {
 	if a.Token != parser.T_MAP {
 		return nil, errors.New("Invalid parser token, expected MAP action.")
 	}
 	if len(a.Actions) == 0 {
-		return nil, errors.New("Map contains no actions to map against.")
+		return nil, fmt.Errorf("Map %q contains no actions to map against.", a.Identifier)
+	}
+	api, ae := apis[a.Value]
+	if !ae {
+		return nil, fmt.Errorf("Map %q references non-existant API %q.", a.Identifier, a.Value)
 	}
 	m := Map{
 		Name:     a.Identifier,
+		API:      &api,
 		FieldMap: serializeObject(&a.Actions[0]),
 		Request:  a.Actions[0].Identifier,
 	}
@@ -103,4 +109,15 @@ func (*Request) Serialize(a *parser.Action) (*Request, error) {
 		}
 	}
 	return &r, nil
+}
+
+func (*Query) Serialize(a *parser.Action) (*Query, error) {
+	if a.Token != parser.T_QUERY {
+		return nil, errors.New("Invalid parser token, expected QUERY")
+	}
+	args := serializeObject(a)
+	q := Query{
+		Args: *args,
+	}
+	return &q, nil
 }
