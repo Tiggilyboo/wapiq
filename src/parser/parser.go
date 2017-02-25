@@ -5,6 +5,8 @@ import (
 	"io"
 )
 
+type ParseMap map[string]Action
+
 type Parser struct {
 	s *Scanner
 	b struct {
@@ -15,7 +17,9 @@ type Parser struct {
 }
 
 func NewParser(r io.Reader) *Parser {
-	return &Parser{s: NewScanner(r)}
+	return &Parser{
+		s: NewScanner(r),
+	}
 }
 
 func (p *Parser) scan() (t Token, l string) {
@@ -160,7 +164,9 @@ func (p *Parser) parseObject(quote Token) (*Action, error) {
 func (p *Parser) Parse() ([]Action, error) {
 	var err error
 	var pa *Action
-	maps := map[string]Action{}
+	maps := ParseMap{}
+	queries := ParseMap{}
+	apis := ParseMap{}
 	a := []Action{}
 
 loop:
@@ -171,18 +177,19 @@ loop:
 			break
 		case T_DONE:
 			if err == nil && pa != nil {
-				if pa.Token == T_GET || pa.Token == T_POST {
+				switch pa.Token {
+				case T_GET, T_POST:
 					maps[pa.Identifier] = *pa
+				case T_API:
+					apis[pa.Identifier] = *pa
+				case T_QUERY:
+					queries[pa.Identifier] = *pa
 				}
 				a = append(a, *pa)
 			}
-			if err != nil {
-				break loop
-			}
-			break
 		case T_QUERY:
 			p.unscan()
-			pa, err = p.parseQuery()
+			pa, err = p.parseQuery(maps)
 		case T_IDENT_NAME, T_IDENT_VALUE:
 			p.unscan()
 			pa, err = p.parseAction(maps)
@@ -190,7 +197,7 @@ loop:
 			break loop
 		default:
 			if err == nil {
-				err = fmt.Errorf("Found %q, expected QUERY or quoted identifier.", l)
+				err = fmt.Errorf("Found %q, expected QUERY or quoted identifier followed by GET, POST or MAP.", l)
 			}
 			break loop
 		}
@@ -198,5 +205,6 @@ loop:
 			break loop
 		}
 	}
+
 	return a, err
 }

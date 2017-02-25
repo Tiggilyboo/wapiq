@@ -30,12 +30,30 @@ func main() {
 	} else {
 		b = []byte(sptr)
 	}
+
 	r := bytes.NewReader(b)
 	p := parser.NewParser(r)
 	a, err := p.Parse()
 	if err != nil {
 		fmt.Println(err.Error())
-		return
 	}
-	fmt.Printf("%v", a)
+
+	for _, act := range a {
+		switch act.Token {
+		case parser.T_API:
+			var api *API
+			api, err = api.Serialize(&act)
+			fmt.Printf("\nAPI: %v\n", api)
+		case parser.T_MAP:
+			var m *Map
+			m, err = m.Serialize(&act)
+			fmt.Printf("\nMap: %v\n", m)
+		case parser.T_GET, parser.T_POST:
+			var req *Request
+			req, err = req.Serialize(&act)
+			fmt.Printf("\nReq: %v, ", req)
+		case parser.T_QUERY:
+
+		}
+	}
 }

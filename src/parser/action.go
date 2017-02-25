@@ -58,7 +58,7 @@ func (p *Parser) parseMap(a Action) ([]Action, error) {
 	return acts, nil
 }
 
-func (p *Parser) parseAction(MapActions map[string]Action) (*Action, error) {
+func (p *Parser) parseAction(maps ParseMap) (*Action, error) {
 	var a Action
 	var t Token
 	var l string
@@ -103,7 +103,7 @@ loop:
 		if len(availActions) > 0 && Token.Exists(actionToken, availActions) == false {
 			return nil, fmt.Errorf("Found %q, not an available action for %s command", actionString, cmds)
 		} else if len(availActions) == 0 {
-			mapAction, mapExists := MapActions[actionString]
+			mapAction, mapExists := maps[actionString]
 			if !mapExists {
 				return nil, fmt.Errorf("Found %q, not an available %s action", actionString, cmds)
 			}
