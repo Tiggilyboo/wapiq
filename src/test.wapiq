@@ -32,9 +32,6 @@
   }
 };
 
-# Create a new MAP between Error and our bad API requests
-
-
 # Query GooglePlaces using search map into Place, where clause parameters
 /search FOR Place WHERE
   name `cruise`

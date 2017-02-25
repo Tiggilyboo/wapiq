@@ -33,7 +33,7 @@ Example: Google Places Configuration
   ]
   body []
 };
-"Place" MAP {
+"Place" MAP "GooglePlaces" {
   "search" {
     "id"        `results.place_id`
     "name"      `results.name`
@@ -93,12 +93,36 @@ type Place struct {
 
 So if you've ever used a query language, its very similar, as expected, this query will return a `[]Place` with the following criteria from the default mapping supplied.
 
-In general, queries take the form
-```
-/-ACTION- FOR -MAPPING- [<optional>WHERE
-  -ARG- `-VALUE-`
-  ...
-  ];
-```
+Fires a request behind the scenes:
+> https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=AIzaSyCZmDlZXIlhlkDbHzAfffvWGWQa1LliZvE&location=-33.8670%2C151.1957&name=cruise&radius=500&types=food
 
-More to come...
+Which returns (Console verbose print from Golang):
+```
+[map[
+  id:ChIJrTLr-GyuEmsRBfy61i59si0
+  name:Australian Cruise Group
+  types:[
+    travel_agency
+    restaurant
+    food
+    point_of_interest
+    establishment
+  ]
+  location:map[lat:-33.867591 lng:151.201196] address:32 The Promenade, King Street Wharf 5, Sydney
+]
+map[
+  id:ChIJLfySpTOuEmsRMFymbMkVkOE
+  name:Vagabond Cruises
+  types:[
+    travel_agency
+    restaurant
+    food
+    point_of_interest
+    establishment
+  ]
+  location:map[lat:-33.87104699999999 lng:151.189736]
+  address:37 Bank Street, Pyrmont
+]
+map[...]
+...
+```
