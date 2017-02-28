@@ -1,9 +1,8 @@
-package main
+package wapiq
 
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -45,7 +44,6 @@ func (r *Request) URL(a *API) (*url.URL, error) {
 		return nil, err
 	}
 	u.RawQuery = r.Query.Encode()
-	fmt.Println(u.String())
 	return u, nil
 }
 

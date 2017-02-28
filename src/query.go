@@ -1,4 +1,4 @@
-package main
+package wapiq
 
 type Query struct {
 	Request Request

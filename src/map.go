@@ -1,4 +1,4 @@
-package main
+package wapiq
 
 import (
 	"bufio"
@@ -16,6 +16,14 @@ type Map struct {
 }
 
 type MapResult map[string]interface{}
+
+func (mr *MapResult) JSON() (string, error) {
+	gc, err := gabs.Consume(mr)
+	if err != nil {
+		return "", err
+	}
+	return gc.String(), nil
+}
 
 func (m *Map) mapJson(r *Response) ([]MapResult, error) {
 	re := bufio.NewReader(&r.Response)

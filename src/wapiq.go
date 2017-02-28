@@ -1,14 +1,12 @@
-package main
+package wapiq
 
 import (
 	"bytes"
 	"errors"
-	"flag"
-	"fmt"
 	"io/ioutil"
 	"strconv"
 
-	"../src/parser"
+	"./parser"
 )
 
 type WAPIQ struct {
@@ -120,42 +118,12 @@ func (w *WAPIQ) Query(script string) (*MapResult, error) {
 	return &mr, nil
 }
 
-func (w *WAPIQ) Load(file string) error {
+func (w *WAPIQ) Load(file string) (*MapResult, error) {
 	var b []byte
 	var err error
 	b, err = ioutil.ReadFile(file)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return w.Execute(string(b))
-}
-
-func main() {
-	var fptr, sptr string
-	flag.StringVar(&fptr, "f", "", "-f <filename>")
-	flag.StringVar(&sptr, "s", "", "-s <string>")
-	flag.Parse()
-	if len(fptr) == 0 && len(sptr) == 0 {
-		fmt.Println("WAPIQ CLI\nusage: \n\t-f <filename>\n\t-s <string>")
-		return
-	}
-
-	var err error
-	w := (&WAPIQ{}).New()
-	err = w.Load("test.wapiq")
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	mr := &MapResult{}
-	mr, err = w.Query("/search FOR Place WHERE name `cruise` location `-33.8670,151.1957` radius `500` types `food`;")
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	if mr != nil {
-		for k, mre := range *mr {
-			fmt.Printf("%s = %v\n", k, mre)
-		}
-		fmt.Printf("%v")
-	}
+	return w.Query(string(b))
 }

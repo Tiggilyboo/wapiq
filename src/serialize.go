@@ -1,4 +1,4 @@
-package main
+package wapiq
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"../src/parser"
+	"./parser"
 )
 
 func serializeArray(a *parser.Action) []string {
