@@ -10,7 +10,43 @@ You, for whatever reason beyond general laziness can't be bothered to write yet 
 
 ## How?
 
-Example: Google Places Configuration
+### Set up
+```sh
+git clone https://github.com/Tiggilyboo/wapiq
+cd wapiq
+go build
+./wapiq -f ./examples/GooglePlaces.wapiq
+```
+Returns JSON from CLI
+```json
+{  
+   "0":[  
+      {  
+         "address":"32 The Promenade, King Street Wharf 5, Sydney",
+         "id":"ChIJrTLr-GyuEmsRBfy61i59si0",
+         "location":{  
+            "lat":-33.867591,
+            "lng":151.201196
+         },
+         "name":"Australian Cruise Group",
+         "types":[  
+            "travel_agency",
+            "restaurant",
+            "food",
+            "point_of_interest",
+            "establishment"
+         ]
+      },
+      {  
+        ...
+      }
+   ]
+}
+```
+
+### Configuration Explanation
+
+Here is the simple GooglePlaces API example we just ran:
 ```wapiq
 "GooglePlaces" API {
   path `https://maps.googleapis.com/maps/api/place/`
@@ -41,7 +77,7 @@ Example: Google Places Configuration
 };
 ```
 
-**Explain what just happened?**
+**Explain, what just happened?**
 
 * **"api name" API { ... }:** Sets up a new API with the quoted name (In this case *GooglePlaces* ).
   * **path** Sets the APIs base uri to use when making any requests.
@@ -93,35 +129,4 @@ So if you've ever used a query language, its very similar, as expected, this que
 Fires a request behind the scenes:
 > https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=AIzaSyCZmDlZXIlhlkDbHzAfffvWGWQa1LliZvE&location=-33.8670%2C151.1957&name=cruise&radius=500&types=food
 
-Which returns (Console verbose print from Golang):
-```
-[map[
-  id:ChIJrTLr-GyuEmsRBfy61i59si0
-  name:Australian Cruise Group
-  types:[
-    travel_agency
-    restaurant
-    food
-    point_of_interest
-    establishment
-  ]
-  location:map[lat:-33.867591 lng:151.201196] address:32 The Promenade, King Street Wharf 5, Sydney
-]
-map[
-  id:ChIJLfySpTOuEmsRMFymbMkVkOE
-  name:Vagabond Cruises
-  types:[
-    travel_agency
-    restaurant
-    food
-    point_of_interest
-    establishment
-  ]
-  location:map[lat:-33.87104699999999 lng:151.189736]
-  address:37 Bank Street, Pyrmont
-]
-map[...]
-...
-```
-
-Read more about WAPIQ [here](http://simonwillshire.com/blog/wapiq/)
+Read more about WAPIQ on my site: [here](http://simonwillshire.com/blog/wapiq/)
