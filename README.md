@@ -44,7 +44,24 @@ Returns JSON from CLI
 }
 ```
 
-### Configuration Explanation
+### Ok, what just got run?
+```wapiq
+/search FOR Place WHERE
+  name `cruise`
+  location `-33.8670,151.1957`
+  radius `500`
+  types `food`
+  ;
+```
+
+So if you've ever used a query language, its very similar, as expected, this query will return a `[]Place` with the following criteria from the default mapping supplied.
+
+Fires a request behind the scenes:
+> https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=AIzaSyCZmDlZXIlhlkDbHzAfffvWGWQa1LliZvE&location=-33.8670%2C151.1957&name=cruise&radius=500&types=food
+
+Read more about WAPIQ on my site: [here](http://simonwillshire.com/blog/WAPIQ/)
+
+### Example Configuration
 
 Here is the simple GooglePlaces API example we just ran:
 ```wapiq
@@ -112,21 +129,3 @@ type Place struct {
   Address string    `json:"address" wapiq:"results.vicinity"`
 }
 ```
-
-### Ok, so how do I request data now?
-
-```wapiq
-/search FOR Place WHERE
-  name `cruise`
-  location `-33.8670,151.1957`
-  radius `500`
-  types `food`
-  ;
-```
-
-So if you've ever used a query language, its very similar, as expected, this query will return a `[]Place` with the following criteria from the default mapping supplied.
-
-Fires a request behind the scenes:
-> https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=AIzaSyCZmDlZXIlhlkDbHzAfffvWGWQa1LliZvE&location=-33.8670%2C151.1957&name=cruise&radius=500&types=food
-
-Read more about WAPIQ on my site: [here](http://simonwillshire.com/blog/wapiq/)
