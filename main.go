@@ -23,7 +23,7 @@ func main() {
 		)
 		return
 	}
-	w := (&wapiq.WAPIQ{}).New()
+	w := wapiq.New()
 
 	if len(fptr) > 0 {
 		fmr, err = w.Load(fptr, len(qptr) == 0)

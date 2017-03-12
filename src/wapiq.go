@@ -17,7 +17,7 @@ type WAPIQ struct {
 	initialized bool
 }
 
-func (*WAPIQ) New() *WAPIQ {
+func New() *WAPIQ {
 	w := &WAPIQ{}
 	w.APIs = map[string]API{}
 	w.Maps = map[string]Map{}
@@ -86,7 +86,7 @@ func (w *WAPIQ) fillQuery(q *Query, a *parser.Action) error {
 
 func (w *WAPIQ) Execute(script string) error {
 	if !w.initialized {
-		return errors.New("WAPIQ has not been initialized correctly, example use: \n\tw := WAPIQ.New()")
+		return errors.New("WAPIQ has not been initialized correctly, example use: \n\tw := wapiq.New()")
 	}
 	b := []byte(script)
 	r := bytes.NewReader(b)

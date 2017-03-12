@@ -187,7 +187,6 @@ loop:
 				case T_API:
 					apis[pa.Identifier] = *pa
 				case T_QUERY:
-					fmt.Println(pa)
 					queries[pa.Identifier] = *pa
 				}
 				a = append(a, *pa)
