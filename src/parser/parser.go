@@ -39,10 +39,14 @@ func (p *Parser) unscan() {
 
 func (p *Parser) scanIgnoreWS() (t Token, l string) {
 	t, l = p.scan()
-	if t == T_WS || t == T_COMMENT {
-		t, l = p.scan()
+	for {
+		if t == T_WS || t == T_COMMENT {
+			t, l = p.scan()
+		} else {
+			break
+		}
 	}
-	return
+	return t, l
 }
 
 func (p *Parser) parseArrayBody() ([]Action, error) {
@@ -183,6 +187,7 @@ loop:
 				case T_API:
 					apis[pa.Identifier] = *pa
 				case T_QUERY:
+					fmt.Println(pa)
 					queries[pa.Identifier] = *pa
 				}
 				a = append(a, *pa)

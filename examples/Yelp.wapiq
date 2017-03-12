@@ -1,0 +1,86 @@
+# Yelp WAPIQ Example
+# https://nz.yelp.com/developers/documentation/
+
+"Yelp" API {
+  path `https://api.yelp.com`
+  args {
+    "grant_type" `client_credentials`
+    "client_id" `0LHLRg-oCu96iFtMmfjy8g`
+    "client_secret" `YOUR_SECRET`
+  }
+};
+
+"Authenticate" POST {
+  path `/oauth2/token`
+  body [
+    `grant_type`
+    `client_id`
+    `client_secret`
+  ]
+};
+
+"Search" GET {
+  path `/v3/businesses/search`
+  query [
+    `term`
+    `location`
+    `latitude`
+    `longitude`
+    `radius`
+    `categories`
+    `locale`
+    `limit`
+    `offset`
+    `sort_by`
+    `price`
+    `open_now`
+    `open_at`
+  ]
+};
+
+"Business" GET {
+  path `/v3/businesses/{id}/reviews`
+  head [
+    `access_token`
+  ]
+  query [
+    `locale`
+  ]
+};
+
+"Business" MAP "Yelp" {
+  "Search" {
+    "id" 	`businesses.id`
+    "name" 	`businesses.name`
+    "latitude"	`businesses.coordinates.latitude`
+    "longitude" `businesses.coordinates.longitude`
+    "country"	`businesses.location.country`
+    "address"	`businesses.location.address1`
+    "rating" 	`businesses.rating`
+    "phone" 	`businesses.phone`
+  }
+};
+
+"Review" MAP "Yelp" {
+  "Business" {
+    "rating"	`reviews.rating`
+    "user"	  `reviews.user.name`
+    "review"	`reviews.text`
+    "posted"	`reviews.time_created`
+  }
+};
+
+"Token" MAP "Yelp" {
+  "Authenticate" {
+    "token" `access_token`
+  }
+};
+
+# Get our access_token
+/Authenticate FOR Token;
+
+/Search FOR Business WHERE
+  access_token `YOUR_ACCESS_TOKEN_FROM_ABOVE_QUERY`
+  term `sushi`
+  limit `10`
+;

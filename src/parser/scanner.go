@@ -77,7 +77,7 @@ func (s *Scanner) scanIdent() (t Token, l string) {
 			break
 		} else if !esc && r == '\\' {
 			esc = true
-		} else if !esc && !isAlpha(r) && !isNum(r) {
+		} else if !esc && !isAlpha(r) && !isNum(r) && r != '_' && r != '-' {
 			s.unread()
 			break
 		} else {
