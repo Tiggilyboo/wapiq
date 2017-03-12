@@ -33,17 +33,18 @@ func (p *Parser) parseQuery() (*Action, error) {
 	a.Value = l
 
 	t, l = p.scanIgnoreWS()
-	if t != T_WHERE && t != T_DONE {
+	if t != T_WHERE && t != T_DONE && t != T_EOF {
 		return nil, fmt.Errorf("Found %q, expected WHERE or ;", l)
 	}
-	if t != T_WHERE {
+	if t == T_DONE || t == T_EOF {
+		p.unscan()
 		return a, nil
 	}
 
 	for {
 		t, l = p.scanIgnoreWS()
 		p.unscan()
-		if t == T_DONE {
+		if t == T_DONE || t == T_EOF || t == T_EOF {
 			break
 		}
 

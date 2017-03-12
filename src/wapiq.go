@@ -118,12 +118,16 @@ func (w *WAPIQ) Query(script string) (*MapResult, error) {
 	return &mr, nil
 }
 
-func (w *WAPIQ) Load(file string) (*MapResult, error) {
+func (w *WAPIQ) Load(file string, query bool) (*MapResult, error) {
 	var b []byte
 	var err error
 	b, err = ioutil.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
-	return w.Query(string(b))
+	if query {
+		return w.Query(string(b))
+	} else {
+		return nil, w.Execute(string(b))
+	}
 }

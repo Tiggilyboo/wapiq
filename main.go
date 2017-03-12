@@ -26,7 +26,7 @@ func main() {
 	w := (&wapiq.WAPIQ{}).New()
 
 	if len(fptr) > 0 {
-		fmr, err = w.Load(fptr)
+		fmr, err = w.Load(fptr, len(qptr) == 0)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
