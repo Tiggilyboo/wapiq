@@ -38,7 +38,7 @@
   ]
 };
 
-"Business" GET {
+"GetReviews" GET {
   path `/v3/businesses/{id}/reviews`
   head [
     `access_token`

@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type RequestType int
@@ -64,6 +65,10 @@ func (r *Request) fillEmptyArgs(a *API) {
 		_, e = r.Body[k]
 		if e {
 			r.Body.Set(k, vs)
+		}
+		p := "{" + k + "}"
+		if strings.Contains(r.Path, p) {
+			r.Path = strings.Replace(r.Path, p, vs, 1)
 		}
 	}
 	for k, v := range r.Query {

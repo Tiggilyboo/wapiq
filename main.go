@@ -19,7 +19,7 @@ func main() {
 	if len(fptr) == 0 && len(qptr) == 0 {
 		fmt.Println("WAPIQ CLI\nusage:\n",
 			"\t-f <filename>      Load from file any query results.\n",
-			"\t-q  <string>        Execute query from passed string.\n",
+			"\t-q <string>        Execute query from passed string.\n",
 		)
 		return
 	}

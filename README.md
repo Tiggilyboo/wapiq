@@ -57,6 +57,7 @@ Returns JSON from CLI
 So if you've ever used a query language, its very similar, as expected, this query will return a `[]Place` with the following criteria from the default mapping supplied.
 
 Fires a request behind the scenes:
+
 > https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=AIzaSyCZmDlZXIlhlkDbHzAfffvWGWQa1LliZvE&location=-33.8670%2C151.1957&name=cruise&radius=500&types=food
 
 Read more about WAPIQ on my site: [here](http://simonwillshire.com/blog/WAPIQ/)
@@ -111,21 +112,31 @@ Here is the simple GooglePlaces API example we just ran:
     * **"id" \`results.place_id\`** Maps the *Place* field *id* to the json location \`results.place_id\`
 
 **JSON Locations**
+
 As previously mentioned, a json mapping is defined by the route to parse out the value you want to have serialized in your object. However, you *do not* need to reference array indexes, as WAPIQ maps all queried values (ie. we just care about the absolute path, not the specific object index returned from the request.)
 
-Currently WAPIQ can only be called from Golang, so if you do not want to override default mappings shown above, you can configure a specific struct with direct mappings if you only want to map to a single predictable request mapping.
+### Request URL Variables
 
-**Golang Mapping Example**
-```go
-type Location struct {
-  Lat float32       `json:"lat" wapiq:"results.geometry.location.lat"`
-  Lon float32       `json:"lon" wapiq:"results.geometry.location.lon"`
-}
-type Place struct {
-  ID int64          `json:"id" wapiq:"results.place_id"`
-  Name string       `json:"name" wapiq:"results.name"`
-  Types []string    `json:"types" wapiq:"results.types"`
-  Location Location `json:"location" wapiq:"results.geometry.location"`
-  Address string    `json:"address" wapiq:"results.vicinity"`
-}
+Many APIs use variables within a request URL, WAPIQ is capable of using variable output in the URL by wrapping  `{}` braces around them. An example use case is provided in the `Yelp.wapiq` example, but here it is in short:
+
+```wapiq
+
+"Business" GET {
+  path `/v3/businesses/{id}/reviews`
+  head [
+    `access_token`
+  ]
+  query [
+    `locale`
+  ]
+};
+```
+**Note:** ***These can be used in the API path, or request (GET/POST) paths***
+
+In the above, `{id}` is the placeholder variable which gets replaced if the variable is provided in the query:
+
+```wapiq
+/GetReviews FOR Reviews WHERE`
+  id `SOME_BUSINESS_ID`
+;
 ```
