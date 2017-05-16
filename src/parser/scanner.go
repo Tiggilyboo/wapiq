@@ -49,6 +49,26 @@ func (s *Scanner) scanComment() (t Token, l string) {
 	return T_COMMENT, b.String()
 }
 
+func (s *Scanner) scanInclude() (t Token, l string) {
+	var b bytes.Buffer
+	b.WriteRune(s.read())
+	s.unread()
+
+	if r := s.read(); r != '^' {
+		s.unread()
+		return T_INCLUDE, b.String()
+	}
+	if r := s.read(); r == '`' || r == '"' {
+		s.unread()
+		_, l = s.scanQuoted(r)
+		return T_INCLUDE, l
+	}
+
+	s.unread()
+	_, l = s.scanIdent()
+	return T_INCLUDE, l
+}
+
 func (s *Scanner) scanWS() (t Token, l string) {
 	var b bytes.Buffer
 	b.WriteRune(s.read())
@@ -77,7 +97,7 @@ func (s *Scanner) scanIdent() (t Token, l string) {
 			break
 		} else if !esc && r == '\\' {
 			esc = true
-		} else if !esc && !isAlpha(r) && !isNum(r) && r != '_' && r != '-' {
+		} else if !esc && !isAlpha(r) && !isNum(r) && r != '_' && r != '-' && r != '/' && r != ',' {
 			s.unread()
 			break
 		} else {
@@ -162,6 +182,9 @@ func (s *Scanner) Scan() (t Token, l string) {
 	} else if r == '#' {
 		s.unread()
 		return s.scanComment()
+	} else if r == '^' {
+		s.unread()
+		return s.scanInclude()
 	} else if r == '"' || r == '`' {
 		s.unread()
 		return s.scanQuoted(r)
@@ -179,6 +202,8 @@ func (s *Scanner) Scan() (t Token, l string) {
 		return T_QUOTE_NAME, string(r)
 	case '`':
 		return T_QUOTE_VALUE, string(r)
+	case '@':
+		return T_AT, string(r)
 	case '{':
 		return T_OBJECT_OPEN, string(r)
 	case '}':

@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"errors"
 	"reflect"
+	"strconv"
+	"strings"
 
 	"github.com/Tiggilyboo/gabs"
 )
@@ -44,6 +46,7 @@ func (m *Map) mapJson(r *Response) ([]MapResult, error) {
 			switch typectr.Kind() {
 			case reflect.Slice:
 				valctr := reflect.ValueOf(ctr)
+
 				if len(mra) != valctr.Len() {
 					more := make([]MapResult, valctr.Len()-len(mra))
 					for mi, _ := range more {
@@ -59,6 +62,39 @@ func (m *Map) mapJson(r *Response) ([]MapResult, error) {
 					mra = append([]MapResult{}, MapResult{})
 				}
 				mra[0][k] = ctr
+			}
+		} else if strings.ContainsRune(path, ',') {
+			indices := strings.Split(path, ",")
+			var ctr *gabs.Container
+			for d, i := range indices {
+				idx, err := strconv.ParseInt(i, 10, 32)
+				if err != nil {
+					continue
+				}
+				ctr, err = gc.ArrayElement(int(idx), "")
+				if d == len(indices) {
+					typectr := reflect.TypeOf(ctr)
+					switch typectr.Kind() {
+					case reflect.Slice:
+						valctr := reflect.ValueOf(ctr)
+
+						if len(mra) != valctr.Len() {
+							more := make([]MapResult, valctr.Len()-len(mra))
+							for mi, _ := range more {
+								more[mi] = MapResult{}
+							}
+							mra = append(mra, more...)
+						}
+						for i := 0; i < valctr.Len(); i++ {
+							mra[i][k] = valctr.Index(i).Interface()
+						}
+					default:
+						if len(mra) == 0 {
+							mra = append([]MapResult{}, MapResult{})
+						}
+						mra[0][k] = ctr
+					}
+				}
 			}
 		}
 	}

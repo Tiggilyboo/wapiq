@@ -9,22 +9,26 @@ const (
 	T_ILLEGAL Token = iota
 	T_EOF
 	T_WS
-	T_COMMENT
+
+	T_COMMENT // #
+	T_INCLUDE // ^
 
 	// Literals
-	T_IDENT        // x
-	T_IDENT_WHERE  // x `x`
-	T_IDENT_NAME   // "x"
-	T_IDENT_VALUE  // `x`
-	T_IDENT_PAIR   // "x" `y`
-	T_IDENT_ARRAY  // x [ ... ]
-	T_IDENT_OBJECT // x { ... }
+	T_IDENT         // x
+	T_IDENT_WHERE   // x `x`
+	T_IDENT_NAME    // "x"
+	T_IDENT_VALUE   // `x`
+	T_IDENT_PAIR    // "x" `y`
+	T_IDENT_PAIR_AT // "x" @n,m
+	T_IDENT_ARRAY   // x [ ... ]
+	T_IDENT_OBJECT  // x { ... }
 
 	// Scope
 	T_OBJECT_OPEN  // {
 	T_OBJECT_CLOSE // }
 	T_ARRAY_OPEN   // [
 	T_ARRAY_CLOSE  // ]
+	T_AT           // @
 
 	T_QUOTE_NAME  // "
 	T_QUOTE_VALUE // `

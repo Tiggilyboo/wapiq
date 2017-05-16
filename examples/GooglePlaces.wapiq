@@ -36,6 +36,6 @@
 /search FOR Place WHERE
   name `cruise`
   location `-33.8670,151.1957`
-  radius `500`
+  radius `400`
   types `food`
   ;

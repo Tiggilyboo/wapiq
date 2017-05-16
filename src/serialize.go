@@ -113,11 +113,30 @@ func (*Request) Serialize(a *parser.Action) (*Request, error) {
 
 func (*Query) Serialize(a *parser.Action) (*Query, error) {
 	if a.Token != parser.T_QUERY {
-		return nil, errors.New("Invalid parser token, expected QUERY")
+		return nil, errors.New("Invalid parser token, expected /")
 	}
 	args := serializeObject(a)
 	q := Query{
 		Args: *args,
 	}
 	return &q, nil
+}
+
+func (*Include) Serialize(a *parser.Action) (*Include, error) {
+	i := Include{
+		File: a.Identifier,
+	}
+	pth, err := i.Path()
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Include file \"%s.wapiq\" does not exist.", i.File))
+	}
+
+	wapiq := WAPIQ{}
+	wapiq.Initialize()
+	_, err = wapiq.Load(pth, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return &i, nil
 }

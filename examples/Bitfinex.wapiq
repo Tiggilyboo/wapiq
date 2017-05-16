@@ -1,0 +1,93 @@
+"Bitfinex" API {
+  path `https://api.bitfinex.com/v2/`
+  args {
+    "key" `YOUR_BITFINEX_APIKEY`
+    "secret" `YOUR_BITFINEX_APISECRET`
+  }
+};
+
+"tickers" GET {
+  path `tickers`
+  type `json`
+  query [
+    `symbols`
+  ]
+};
+
+"trades" GET {
+  path `trades/t{symbol}`
+  type `json`
+  query [
+    `limit`
+    `start`
+    `end`
+    `sort`
+  ]
+};
+
+"funding" GET {
+  path `trades/f{symbol}`
+  type `json`
+  query [
+    `limit`
+    `start`
+    `end`
+    `sort`
+  ]
+};
+
+"stats" GET {
+  path `stats1/{key}.{size}:{symbol}:{side}/{section}`
+  query [
+    `sort`
+  ]
+};
+
+"Market" MAP "Bitfinex" {
+  "tickers" {
+    "FlashReturnRate" @0,0
+    "Bid"             @0,1
+    "BidSize"         @0,2
+    "BidPeriod"       @0,3
+    "Ask"             @0,4
+    "AskSize"         @0,5
+    "DailyChange"     @0,6
+    "DailyChangePerc" @0,7
+    "LastPrice"       @0,8
+    "Volume"          @0,9
+    "High"            @0,10
+    "Low"             @0,11
+  }
+};
+
+"Trade" MAP "Bitfinex" {
+  "trades" {
+    "Id"              @0,0
+    "Mts"             @0,1
+    "Amount"          @0,2
+    "Price"           @0,3
+  }
+  "funding" {
+    "Id"              @0,0
+    "Mts"             @0,1
+    "Amount"          @0,2
+    "Rate"            @0,3
+    "Period"          @0,4
+  }
+};
+
+# Stats Response when section = last
+"StatsLast" MAP "Bitfinex" {
+  "stats" {
+    "Mts"             @0
+    "Value"           @1
+  }
+};
+
+# Stats Response when section = hist
+"StatsHist" MAP "Bitfinex" {
+  "stats" {
+    "Mts"            @,0
+    "Value"          @,1
+  }
+};

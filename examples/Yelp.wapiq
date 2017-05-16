@@ -62,7 +62,7 @@
 };
 
 "Review" MAP "Yelp" {
-  "Business" {
+  "GetReviews" {
     "rating"	`reviews.rating`
     "user"	  `reviews.user.name`
     "review"	`reviews.text`

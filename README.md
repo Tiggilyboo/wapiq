@@ -5,6 +5,7 @@ So, let's say you need to interface with all kinds of different web APIs, for ex
   * Google Places API
   * TripAdviser API
   * Yelp API
+  * A Crypto currency exchange API (ex. Bitfinex)
 
 You, for whatever reason beyond general laziness can't be bothered to write yet another web api interaction, and properly parse the damned thing... So here's my solution to this, or at least some attempt.
 
@@ -121,7 +122,7 @@ Many APIs use variables within a request URL, WAPIQ is capable of using variable
 
 ```wapiq
 
-"Business" GET {
+"GetReviews" GET {
   path `/v3/businesses/{id}/reviews`
   head [
     `access_token`
@@ -140,3 +141,67 @@ In the above, `{id}` is the placeholder variable which gets replaced if the vari
   id `SOME_BUSINESS_ID`
 ;
 ```
+
+### Array @ Expressions
+
+Some APIs use arrays with an expected set of information (without naming the key of the value in the pair). In order to handle these responses, WAPIQ uses the `@` character when specifying the index in the array, or the depth of the array. Here is an example that is used when handling responses from the Bitfinex exchange API (See more in ```examples/Bitfinex.wapiq```):
+
+```wapiq
+...
+"Trade" MAP "Bitfinex" {
+  "trades" {
+    "Id"              @0,0
+    "Mts"             @0,1
+    "Amount"          @0,2
+    "Price"           @0,3
+  }
+  "funding" {
+    "Id"              @0,0
+    "Mts"             @0,1
+    "Amount"          @0,2
+    "Rate"            @0,3
+    "Period"          @0,4
+  }
+};
+```
+
+In the above example, ```@0,0``` is used to read a json value from a response like this one, where <> are used as placeholders to identify the indexes:
+
+```json
+  [
+    [
+      <ID>,
+      <MTS>,
+      <AMOUNT>,
+      <PRICE>
+    ],
+    [
+      ...
+    ],
+    ...
+  ]
+```
+
+The first ```@0``` specifies the first embedded array object, ```[[<here>],...]```, and the second identifies the first element (at index 0) inside that array.
+
+If we wanted to just read the first element in an array, we just use ```@0```, and ```@1``` is the proceding element, etc.
+
+### Includes
+So let's say you're implementing a particularily intricate API using WAPIQ, but you are struggling with the separation of concerns of the script. For example, you are implementing a public or common portion of the API, and want to separate the authenticated endpoints from the common. In order to handle this, WAPIQ can use include statements using the `^` character followed by the filename (excluding the wapiq extension).
+
+As an example, the Bitfinex example is split into Bitfinex.wapiq and Bitfinex_Auth.wapiq:
+```wapiq
+# Include common API from Bitfinex.wapiq
+^Bitfinex
+
+"wallets" POST {
+  path "auth/wallets"
+  head [
+    `bfx-apikey`
+    `bfx-apisecret`
+    `bfx-nonce`
+  ]
+};
+```
+
+At the moment WAPIQ does not support inheritance of objects (potential in the future), but this at least allows file separation.

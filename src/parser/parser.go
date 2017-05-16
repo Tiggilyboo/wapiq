@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"io"
+	"strings"
 )
 
 type ParseMap map[string]Action
@@ -109,7 +110,7 @@ func (p *Parser) parseObjectBody() ([]Action, error) {
 
 	t, l = p.scanIgnoreWS()
 	if t != T_OBJECT_OPEN {
-		return nil, fmt.Errorf("Found %q, expected { after object identifier.")
+		return nil, fmt.Errorf("Found %q, expected { after object identifier.", l)
 	}
 
 	a := []Action{}
@@ -118,20 +119,38 @@ func (p *Parser) parseObjectBody() ([]Action, error) {
 		if t == T_OBJECT_CLOSE {
 			break
 		} else if t != T_IDENT_NAME {
-			return nil, fmt.Errorf("Found %q, expected name identifier in object.")
+			return nil, fmt.Errorf("Found %q, expected name identifier in object.", l)
 		}
 		n := l
 
 		t, l = p.scanIgnoreWS()
-		if t != T_IDENT_VALUE {
-			return nil, fmt.Errorf("Found %q, expected value identifier after name in object.")
+		if t != T_IDENT_VALUE && t != T_AT {
+			return nil, fmt.Errorf("Found %q, expected value identifier (surrounded by `) or an @ expression after name identifier.")
 		}
-
-		a = append(a, Action{
-			Token:      T_IDENT_PAIR,
-			Identifier: n,
-			Value:      l,
-		})
+		if t == T_IDENT_VALUE {
+			a = append(a, Action{
+				Token:      T_IDENT_PAIR,
+				Identifier: n,
+				Value:      l,
+			})
+		} else if t == T_AT {
+			indices := []string{}
+			for {
+				t, l = p.scanIgnoreWS()
+				if t == T_IDENT_NAME || t == T_OBJECT_CLOSE {
+					p.unscan()
+					break
+				} else if t != T_IDENT && l != "," {
+					return nil, fmt.Errorf("Found %q, expected numerical array indices after @ expression.", l)
+				}
+				indices = append(indices, l)
+			}
+			a = append(a, Action{
+				Token:      T_IDENT_PAIR_AT,
+				Identifier: n,
+				Value:      strings.Join(indices, ","),
+			})
+		}
 	}
 
 	return a, nil
@@ -171,6 +190,7 @@ func (p *Parser) Parse() ([]Action, error) {
 	maps := ParseMap{}
 	queries := ParseMap{}
 	apis := ParseMap{}
+	includes := ParseMap{}
 	a := []Action{}
 
 loop:
@@ -179,6 +199,11 @@ loop:
 		switch t {
 		case T_COMMENT:
 			break
+		case T_INCLUDE:
+			p.unscan()
+			pa, err = p.parseInclude(includes)
+			includes[pa.Identifier] = *pa
+			a = append(a, *pa)
 		case T_DONE:
 			if err == nil && pa != nil {
 				switch pa.Token {
@@ -202,7 +227,7 @@ loop:
 			break loop
 		default:
 			if err == nil {
-				err = fmt.Errorf("Found %q, expected QUERY or quoted identifier followed by GET, POST or MAP.", l)
+				err = fmt.Errorf("Found %q, expected query (/), inclusion (^) or quoted identifier followed by GET, POST or MAP.", l)
 			}
 			break loop
 		}

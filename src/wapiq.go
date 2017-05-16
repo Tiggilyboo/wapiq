@@ -14,16 +14,22 @@ type WAPIQ struct {
 	Maps        map[string]Map
 	Requests    map[string]Request
 	Queries     []Query
+	Includes    map[string]Include
 	initialized bool
 }
 
 func New() *WAPIQ {
 	w := &WAPIQ{}
+	w.Initialize()
+	return w
+}
+
+func (w *WAPIQ) Initialize() {
 	w.APIs = map[string]API{}
 	w.Maps = map[string]Map{}
 	w.Requests = map[string]Request{}
+	w.Includes = map[string]Include{}
 	w.initialized = true
-	return w
 }
 
 func (w *WAPIQ) serializeActions(actions []parser.Action) error {
@@ -31,6 +37,13 @@ func (w *WAPIQ) serializeActions(actions []parser.Action) error {
 
 	for _, act := range actions {
 		switch act.Token {
+		case parser.T_INCLUDE:
+			var include *Include
+			include, err = include.Serialize(&act)
+			if err != nil {
+				return err
+			}
+			w.Includes[include.File] = *include
 		case parser.T_API:
 			var api *API
 			api, err = api.Serialize(&act)

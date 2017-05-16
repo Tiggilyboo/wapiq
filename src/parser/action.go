@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Action struct {
@@ -26,10 +27,21 @@ func (a *Action) Has(t []Token, v string) bool {
 			if a.Identifier == v || a.Value == v {
 				return true
 			}
+		case T_IDENT_PAIR_AT:
+			if a.Identifier == v || a.Value == v {
+				return true
+			}
+			if strings.ContainsRune(a.Value, ',') {
+				for _, vi := range strings.Split(a.Value, ",") {
+					if vi == v {
+						return true
+					}
+				}
+			}
 		}
-	}
-	for _, aa := range a.Actions {
-		return aa.Has(t, v)
+		for _, aa := range a.Actions {
+			return aa.Has(t, v)
+		}
 	}
 	return false
 }
@@ -37,7 +49,7 @@ func (a *Action) Has(t []Token, v string) bool {
 func (p *Parser) parseMap(a Action) ([]Action, error) {
 	var t Token
 	var l string
-	var MapTokens = [...]Token{T_IDENT_NAME, T_IDENT_VALUE, T_IDENT_PAIR}
+	var MapTokens = [...]Token{T_IDENT_NAME, T_IDENT_VALUE, T_IDENT_PAIR, T_IDENT_PAIR_AT}
 
 	t, l = p.scanIgnoreWS()
 	if t != T_OBJECT_OPEN {
